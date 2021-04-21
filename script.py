@@ -16,5 +16,4 @@ while counter < all_pages:
     filename = f'id={counter}.txt'
     with open(os.path.join(path, filename), 'wb') as file:
         file.write(response.content)
-    print(response.status_code)
     counter += 1
