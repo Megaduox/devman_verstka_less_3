@@ -115,3 +115,4 @@ dmypy.json
 
 # My directory
 books/
+.idea/
