@@ -64,4 +64,28 @@ def download_image(path='images', all_pages=10, counter=5, root_url='https://tul
             counter += 1
 
 
-download_image()
+def parse_book_page(soup):
+    comments_text = soup.find_all('div', class_='texts')
+    for comment in comments_text:
+        comment_text = comment.find('span', class_='black').text
+        print(comment_text)
+
+
+def get_comments(all_pages=11, counter=1, root_url='https://tululu.org/txt.php'):
+    while counter < all_pages:
+        html_page = f'https://tululu.org/b{counter}/'
+        response_html_page = requests.get(html_page, verify=False)
+        try:
+            check_for_redirect(response_html_page)
+            response_html_page.raise_for_status()
+            soup = BeautifulSoup(response_html_page.text, 'lxml')
+            book_name_author_all_text_from_h1 = soup.find('h1').text.split('::')
+            book_name = book_name_author_all_text_from_h1[0].strip()
+            print(book_name)
+            parse_book_page(soup)
+            counter += 1
+        except requests.HTTPError:
+            counter += 1
+
+
+get_comments()
