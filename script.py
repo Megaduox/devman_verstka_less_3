@@ -64,7 +64,7 @@ def download_image(path='images', all_pages=10, counter=5):
             counter += 1
 
 
-def parse_book_page(soup):
+def parse_book_comments(soup):
     comments_text = soup.find_all('div', class_='texts')
     for comment in comments_text:
         comment_text = comment.find('span', class_='black').text
@@ -86,7 +86,7 @@ def get_comments_and_genres(all_pages=11, counter=1):
             for genr in book_genres:
                 print('Жанр(ы) книги:', genr.text)
             print('Название книги:', book_name)
-            parse_book_page(soup)
+            parse_book_comments(soup)
             counter += 1
         except requests.HTTPError:
             counter += 1
