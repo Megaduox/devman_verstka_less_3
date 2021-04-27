@@ -92,4 +92,36 @@ def get_comments_and_genres(all_pages=11, counter=1):
             counter += 1
 
 
-get_comments_and_genres()
+def parse_book_page(soup):
+    book_information = {}
+    all_comments = []
+    all_genres = []
+
+    book_name_author_all_text_from_h1 = soup.find('h1').text.split('::')
+    book_information['Название книги'] = book_name_author_all_text_from_h1[0].strip()
+    book_information['Автор книги'] = book_name_author_all_text_from_h1[-1].strip()
+    book_image_short_url = soup.find('div', class_='bookimage').find('img')['src']
+    book_information['Ссылка на обложку'] = urljoin('https://tululu.org/', book_image_short_url)
+    all_book_genres = soup.find('span', class_='d_book')
+    book_genres = all_book_genres.find_all('a')
+    for genr in book_genres:
+        all_genres.append(genr.text)
+    book_information['Жанр(-ы) книги'] = all_genres
+    comments_text = soup.find_all('div', class_='texts')
+    for comment in comments_text:
+        comment_text = comment.find('span', class_='black').text
+        all_comments.append(comment_text)
+    book_information['Комментарии'] = all_comments
+
+    return book_information
+
+
+html_page = 'https://tululu.org/b9/'
+response_html_page = requests.get(html_page, verify=False)
+try:
+    check_for_redirect(response_html_page)
+    response_html_page.raise_for_status()
+    soup = BeautifulSoup(response_html_page.text, 'lxml')
+    print(parse_book_page(soup))
+except requests.HTTPError:
+    print('Ошибка запроса к странице')
