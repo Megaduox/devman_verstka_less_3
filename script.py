@@ -16,13 +16,13 @@ def check_for_redirect(response_check):
         pass
 
 
-def download_txt(counter=1, all_pages=11, path='books', root_url='https://tululu.org/txt.php'):
+def download_txt(start_page, end_page, path='books', root_url='https://tululu.org/txt.php'):
     if not os.path.exists(path):
         os.makedirs(path)
-    while counter < all_pages:
-        payload = {'id': counter}
+    while start_page < end_page:
+        payload = {'id': start_page}
         response = requests.get(root_url, verify=False, params=payload)
-        html_page = f'https://tululu.org/b{counter}/'
+        html_page = f'https://tululu.org/b{start_page}/'
         response_html_page = requests.get(html_page, verify=False)
         try:
             check_for_redirect(response)
@@ -37,16 +37,16 @@ def download_txt(counter=1, all_pages=11, path='books', root_url='https://tululu
             book_image_full_url = urljoin('https://tululu.org/', book_image_short_url)
             with open(os.path.join(path, filename), 'wb') as file:
                 file.write(response.content)
-            counter += 1
+            start_page += 1
         except requests.HTTPError:
-            counter += 1
+            start_page += 1
 
 
-def download_image(path='images', all_pages=10, counter=5):
+def download_image(start_page, end_page, path='images'):
     if not os.path.exists(path):
         os.makedirs(path)
-    while counter < all_pages:
-        html_page = f'https://tululu.org/b{counter}/'
+    while start_page < end_page:
+        html_page = f'https://tululu.org/b{start_page}/'
         response_html_page = requests.get(html_page, verify=False)
         try:
             check_for_redirect(response_html_page)
@@ -60,9 +60,9 @@ def download_image(path='images', all_pages=10, counter=5):
             response_image.raise_for_status()
             with open(os.path.join(path, filename), 'wb') as file:
                 file.write(response_image.content)
-            counter += 1
+            start_page += 1
         except requests.HTTPError:
-            counter += 1
+            start_page += 1
 
 
 def parse_book_comments(soup):
@@ -72,8 +72,8 @@ def parse_book_comments(soup):
         print(comment_text)
 
 
-def get_comments_and_genres(counter, all_pages):
-    for page in range(counter, all_pages):
+def get_comments_and_genres(start_page, end_page):
+    for page in range(start_page, end_page):
         html_page = f'https://tululu.org/b{page}/'
         response_html_page = requests.get(html_page, verify=False)
         try:
