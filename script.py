@@ -30,16 +30,6 @@ def download_txt(response, response_html_page, path='books'):
         file.write(response.content)
 
 
-def main(start_book_id, end_book_id, root_url='https://tululu.org/txt.php'):
-    for start_book_id in range(1, end_book_id+1):
-        payload = {'id': start_book_id}
-        response = requests.get(root_url, verify=False, params=payload)
-        html_page = f'https://tululu.org/b{start_book_id}/'
-        response_html_page = requests.get(html_page, verify=False)
-        download_txt(response, response_html_page)
-        download_image(response_html_page)
-
-
 def download_image(response_html_page, path='images'):
     os.makedirs(path, exist_ok=True)
     check_for_redirect(response_html_page)
@@ -70,8 +60,7 @@ def get_comments_and_genres(start_page, end_page):
         response_html_page.raise_for_status()
         soup = BeautifulSoup(response_html_page.text, 'lxml')
         book_name_author_all_text_from_h1 = soup.find('h1').text.split('::')
-        book_name = book_name_author_all_text_from_h1[0].strip()
-        book_author = book_name_author_all_text_from_h1[-1].strip()
+        book_name, book_author = book_name_author_all_text_from_h1
         all_book_genres = soup.find('span', class_='d_book')
         book_genres = all_book_genres.find_all('a')
         print('Название книги:', book_name)
@@ -85,10 +74,8 @@ def parse_book_page(soup):
     book_information = {}
     all_comments = []
     all_genres = []
-
     book_name_author_all_text_from_h1 = soup.find('h1').text.split('::')
-    book_information['Название книги'] = book_name_author_all_text_from_h1[0].strip()
-    book_information['Автор книги'] = book_name_author_all_text_from_h1[-1].strip()
+    book_information['Название книги'], book_information['Автор книги'] = book_name_author_all_text_from_h1
     book_image_short_url = soup.find('div', class_='bookimage').find('img')['src']
     book_information['Ссылка на обложку'] = urljoin('https://tululu.org/', book_image_short_url)
     all_book_genres = soup.find('span', class_='d_book')
@@ -101,8 +88,17 @@ def parse_book_page(soup):
         comment_text = comment.find('span', class_='black').text
         all_comments.append(comment_text)
     book_information['Комментарии'] = all_comments
-
     return book_information
+
+
+def main(start_book_id, end_book_id, root_url='https://tululu.org/txt.php'):
+    for start_book_id in range(1, end_book_id+1):
+        payload = {'id': start_book_id}
+        response = requests.get(root_url, verify=False, params=payload)
+        html_page = f'https://tululu.org/b{start_book_id}/'
+        response_html_page = requests.get(html_page, verify=False)
+        download_txt(response, response_html_page)
+        download_image(response_html_page)
 
 
 if __name__ == '__main__':
@@ -118,6 +114,8 @@ if __name__ == '__main__':
         get_comments_and_genres(args.start_id, args.end_id)
     except requests.HTTPError:
         print('Ошибка при запросе')
-
+    # response = requests.get('https://tululu.org/b50', verify=False)
+    # soup = BeautifulSoup(response.text, 'lxml')
+    # parse_book_page(soup)
 
 
