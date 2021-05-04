@@ -116,3 +116,5 @@ dmypy.json
 # My directory
 books/
 .idea/
+tululu.py
+bs4_tutorial.py
