@@ -97,21 +97,23 @@ def main(start_book_id, end_book_id, root_url='https://tululu.org/txt.php'):
 
 
 if __name__ == '__main__':
-    # parser = argparse.ArgumentParser(description='Скрипт парсинга книг из онлайн-библиотеки tululu.org.'
-    #                                              'Для работы скрипта задайте два аргумента - с какой по какую'
-    #                                              'страницу парсить. Если ничего не задать - скрипт'
-    #                                              'по умолчанию скачает первые 10 страниц библиотеки.'
-    #                                              'Первый аргумент - начальная страница, второй - конечная страница.')
-    # parser.add_argument('start_id', help='Начальная страница', type=int, default=1, nargs='?')
-    # parser.add_argument('end_id', help='Конечная страница', type=int, default=10, nargs='?')
-    # args = parser.parse_args()
-    # try:
-    #     get_comments_and_genres(args.start_id, args.end_id)
-    # except requests.HTTPError:
-    #     print('Ошибка при запросе')
+    parser = argparse.ArgumentParser(description='''
+    Скрипт парсинга книг из онлайн-библиотеки tululu.org.
+    Для работы скрипта задайте два аргумента - с какой по какую
+    страницу парсить. Если ничего не задать - скрипт
+    по умолчанию скачает первые 10 страниц библиотеки.
+    Первый аргумент - начальная страница, второй - конечная страница.
+    ''')
+    parser.add_argument('start_id', help='Начальная страница', type=int, default=1, nargs='?')
+    parser.add_argument('end_id', help='Конечная страница', type=int, default=10, nargs='?')
+    args = parser.parse_args()
+    try:
+        get_comments_and_genres(args.start_id, args.end_id)
+    except requests.HTTPError:
+        print('Ошибка при запросе')
 
-    response = requests.get('https://tululu.org/b5', verify=False)
-    soup = BeautifulSoup(response.text, 'lxml')
-    print(parse_book_page(soup))
+    # response = requests.get('https://tululu.org/b5', verify=False)
+    # soup = BeautifulSoup(response.text, 'lxml')
+    # print(parse_book_comments(soup))
 
 
