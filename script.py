@@ -23,8 +23,8 @@ def download_txt(response, response_html_page, path='books'):
     check_for_redirect(response_html_page)
     response_html_page.raise_for_status()
     soup = BeautifulSoup(response_html_page.text, 'lxml')
-    book_name_author_all_text_from_h1 = soup.find('h1').text.split('::')
-    book_name = book_name_author_all_text_from_h1[0].strip()
+    book_name_and_author = soup.find('h1').text.split('::')
+    book_name = book_name_and_author[0].strip()
     filename = sanitize_filename(f'{book_name}.txt')
     with open(os.path.join(path, filename), 'wb') as file:
         file.write(response.content)
@@ -59,8 +59,8 @@ def get_comments_and_genres(start_page, end_page):
         check_for_redirect(response_html_page)
         response_html_page.raise_for_status()
         soup = BeautifulSoup(response_html_page.text, 'lxml')
-        book_name_author_all_text_from_h1 = soup.find('h1').text.split('::')
-        book_name, book_author = book_name_author_all_text_from_h1
+        book_name_and_author = soup.find('h1').text.split('::')
+        book_name, book_author = book_name_and_author
         all_book_genres = soup.find('span', class_='d_book')
         book_genres = all_book_genres.find_all('a')
         print('Название книги:', book_name)
@@ -74,8 +74,8 @@ def parse_book_page(soup):
     book_information = {}
     all_comments = []
     all_genres = []
-    book_name_author_all_text_from_h1 = soup.find('h1').text.split('::')
-    book_information['Название книги'], book_information['Автор книги'] = book_name_author_all_text_from_h1
+    book_name_and_author = soup.find('h1').text.split('::')
+    book_information['Название книги'], book_information['Автор книги'] = book_name_and_author
     book_image_short_url = soup.find('div', class_='bookimage').find('img')['src']
     book_information['Ссылка на обложку'] = urljoin('https://tululu.org/', book_image_short_url)
     all_book_genres = soup.find('span', class_='d_book')
