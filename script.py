@@ -49,7 +49,7 @@ def parse_book_comments(soup):
     comments_text = soup.find_all('div', class_='texts')
     for comment in comments_text:
         comment_text = comment.find('span', class_='black').text
-        print(comment_text)
+    return comment_text
 
 
 def get_comments_and_genres(start_page, end_page):
@@ -67,12 +67,11 @@ def get_comments_and_genres(start_page, end_page):
         print('Автор книги:', book_author)
         for genr in book_genres:
             print('Жанр(ы) книги:', genr.text)
-        parse_book_comments(soup)
+        print('Комментарии:', parse_book_comments(soup), sep='\n')
 
 
 def parse_book_page(soup):
     book_information = {}
-    all_comments = []
     book_name_and_author = soup.find('h1').text.split('::')
     book_information['Название книги'], book_information['Автор книги'] = book_name_and_author
     book_image_short_url = soup.find('div', class_='bookimage').find('img')['src']
@@ -87,13 +86,14 @@ def parse_book_page(soup):
 
 
 def main(start_book_id, end_book_id, root_url='https://tululu.org/txt.php'):
-    for start_book_id in range(1, end_book_id+1):
-        payload = {'id': start_book_id}
+    for book_id in range(start_book_id, end_book_id+1):
+        payload = {'id': book_id}
         response = requests.get(root_url, verify=False, params=payload)
-        html_page = f'https://tululu.org/b{start_book_id}/'
+        html_page = f'https://tululu.org/b{book_id}/'
         response_html_page = requests.get(html_page, verify=False)
         download_txt(response, response_html_page)
         download_image(response_html_page)
+        get_comments_and_genres(start_book_id, end_book_id)
 
 
 if __name__ == '__main__':
@@ -108,12 +108,6 @@ if __name__ == '__main__':
     parser.add_argument('end_id', help='Конечная страница', type=int, default=10, nargs='?')
     args = parser.parse_args()
     try:
-        get_comments_and_genres(args.start_id, args.end_id)
+        main(args.start_id, args.end_id)
     except requests.HTTPError:
         print('Ошибка при запросе')
-
-    # response = requests.get('https://tululu.org/b5', verify=False)
-    # soup = BeautifulSoup(response.text, 'lxml')
-    # print(parse_book_comments(soup))
-
-
