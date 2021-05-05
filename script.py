@@ -73,21 +73,16 @@ def get_comments_and_genres(start_page, end_page):
 def parse_book_page(soup):
     book_information = {}
     all_comments = []
-    all_genres = []
     book_name_and_author = soup.find('h1').text.split('::')
     book_information['Название книги'], book_information['Автор книги'] = book_name_and_author
     book_image_short_url = soup.find('div', class_='bookimage').find('img')['src']
     book_information['Ссылка на обложку'] = urljoin('https://tululu.org/', book_image_short_url)
     all_book_genres = soup.find('span', class_='d_book')
     book_genres = all_book_genres.find_all('a')
-    for genr in book_genres:
-        all_genres.append(genr.text)
+    all_genres = [genr.text for genr in book_genres]
     book_information['Жанр(-ы) книги'] = all_genres
     comments_text = soup.find_all('div', class_='texts')
-    for comment in comments_text:
-        comment_text = comment.find('span', class_='black').text
-        all_comments.append(comment_text)
-    book_information['Комментарии'] = all_comments
+    book_information['Комментарии'] = [comment.find('span', class_='black').text for comment in comments_text]
     return book_information
 
 
@@ -102,20 +97,21 @@ def main(start_book_id, end_book_id, root_url='https://tululu.org/txt.php'):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Скрипт парсинга книг из онлайн-библиотеки tululu.org.'
-                                                 'Для работы скрипта задайте два аргумента - с какой по какую'
-                                                 'страницу парсить. Если ничего не задать - скрипт'
-                                                 'по умолчанию скачает первые 10 страниц библиотеки.'
-                                                 'Первый аргумент - начальная страница, второй - конечная страница.')
-    parser.add_argument('start_id', help='Начальная страница', type=int, default=1, nargs='?')
-    parser.add_argument('end_id', help='Конечная страница', type=int, default=10, nargs='?')
-    args = parser.parse_args()
-    try:
-        get_comments_and_genres(args.start_id, args.end_id)
-    except requests.HTTPError:
-        print('Ошибка при запросе')
-    # response = requests.get('https://tululu.org/b50', verify=False)
-    # soup = BeautifulSoup(response.text, 'lxml')
-    # parse_book_page(soup)
+    # parser = argparse.ArgumentParser(description='Скрипт парсинга книг из онлайн-библиотеки tululu.org.'
+    #                                              'Для работы скрипта задайте два аргумента - с какой по какую'
+    #                                              'страницу парсить. Если ничего не задать - скрипт'
+    #                                              'по умолчанию скачает первые 10 страниц библиотеки.'
+    #                                              'Первый аргумент - начальная страница, второй - конечная страница.')
+    # parser.add_argument('start_id', help='Начальная страница', type=int, default=1, nargs='?')
+    # parser.add_argument('end_id', help='Конечная страница', type=int, default=10, nargs='?')
+    # args = parser.parse_args()
+    # try:
+    #     get_comments_and_genres(args.start_id, args.end_id)
+    # except requests.HTTPError:
+    #     print('Ошибка при запросе')
+
+    response = requests.get('https://tululu.org/b5', verify=False)
+    soup = BeautifulSoup(response.text, 'lxml')
+    print(parse_book_page(soup))
 
 
