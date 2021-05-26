@@ -47,9 +47,11 @@ def download_image(response_html_page, path='images'):
 
 def parse_book_comments(soup):
     comments_text = soup.find_all('div', class_='texts')
+    comment_text = []
     for comment in comments_text:
         comment_text = comment.find('span', class_='black').text
-    return comment_text
+    if comment_text:
+        return comment_text
 
 
 def get_comments_and_genres(start_page, end_page):
@@ -109,5 +111,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
     try:
         main(args.start_id, args.end_id)
-    except requests.HTTPError:
-        print('Ошибка при запросе')
+    except requests.HTTPError as error:
+        print('Ошибка при запросе', error)
