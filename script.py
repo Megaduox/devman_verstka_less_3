@@ -16,11 +16,8 @@ def check_for_redirect(response_check):
         pass
 
 
-def download_txt(response, response_html_page, path='books'):
+def download_txt(response, soup, path='books'):
     os.makedirs(path, exist_ok=True)
-    response.raise_for_status()
-    response_html_page.raise_for_status()
-    soup = BeautifulSoup(response_html_page.text, 'lxml')
     book_name_author_all_text_from_h1 = soup.find('h1').text.split('::')
     book_name = book_name_author_all_text_from_h1[0].strip()
     filename = sanitize_filename(f'{book_name}.txt')
@@ -28,17 +25,13 @@ def download_txt(response, response_html_page, path='books'):
         file.write(response.content)
 
 
-def download_image(response_html_page, path='images'):
+def download_image(soup, path='images'):
     os.makedirs(path, exist_ok=True)
-    response_html_page.raise_for_status()
-    soup = BeautifulSoup(response_html_page.text, 'lxml')
     try:
         book_image_short_url = soup.find('div', class_='bookimage').find('img')['src']
         book_image_full_url = urljoin('https://tululu.org/', book_image_short_url)
         filename = unquote(book_image_full_url.split('/')[-1])
         response_image = requests.get(book_image_full_url, verify=False)
-        # check_for_redirect(response_image)
-        response_image.raise_for_status()
         with open(os.path.join(path, filename), 'wb') as file:
             file.write(response_image.content)
     except AttributeError as e:
@@ -46,18 +39,11 @@ def download_image(response_html_page, path='images'):
 
 
 def parse_book_comments(soup):
-    comments_text = soup.find_all('div', class_='texts')
-    for comment in comments_text:
-        comment_text = comment.find('span', class_='black').text
-        print(comment_text)
+    all_comments = [comment.find('span', class_='black').text for comment in soup.find_all('div', class_='texts')]
+    print(all_comments)
 
 
-def get_comments_and_genres(start_page):
-    html_page = f'https://tululu.org/b{start_page}/'
-    response_html_page = requests.get(html_page, verify=False)
-    check_for_redirect(response_html_page)
-    response_html_page.raise_for_status()
-    soup = BeautifulSoup(response_html_page.text, 'lxml')
+def get_comments_and_genres(soup):
     book_name_author_all_text_from_h1 = soup.find('h1').text.split('::')
     book_name = book_name_author_all_text_from_h1[0].strip()
     book_author = book_name_author_all_text_from_h1[-1].strip()
@@ -107,11 +93,18 @@ def main(root_url='https://tululu.org/txt.php'):
     for start_book_id in range(args.start_id, args.end_id+1):
         payload = {'id': start_book_id}
         response = requests.get(root_url, verify=False, params=payload)
+        response.raise_for_status()
         html_page = f'https://tululu.org/b{start_book_id}/'
-        response_html_page = requests.get(html_page, verify=False)
-        download_txt(response, response_html_page)
-        download_image(response_html_page)
-        get_comments_and_genres(start_book_id)
+        try:
+            response_html_page = requests.get(html_page, verify=False)
+            response_html_page.raise_for_status()
+            check_for_redirect(response_html_page)
+            soup = BeautifulSoup(response_html_page.text, 'lxml')
+            download_txt(response, soup)
+            download_image(soup)
+            get_comments_and_genres(soup)
+        except requests.HTTPError as e:
+            print(f'Ошибка HTTP: {e}')
 
 
 if __name__ == '__main__':
