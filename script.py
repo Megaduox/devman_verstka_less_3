@@ -54,6 +54,31 @@ def get_comments_and_genres(soup):
     parse_book_comments(soup)
 
 
+def parse_book_page(soup):
+
+    all_comments = []
+    all_genres = []
+
+    book_name_and_author = soup.find('h1').text.split('::')
+    book_image_short_url = soup.find('div', class_='bookimage').find('img')['src']
+
+    all_book_genres = soup.find('span', class_='d_book')
+    book_genres = all_book_genres.find_all('a')
+    all_genres = [genr.text for genr in book_genres]
+
+    book_information = {
+        'Название книги': book_name_and_author[0].strip(),
+        'Автор книги': book_name_and_author[-1].strip(),
+        'Ссылка на обложку': urljoin('https://tululu.org/', book_image_short_url),
+        'Жанр(-ы) книги': urljoin('https://tululu.org/', all_genres),
+    }
+
+    comments_text = soup.find_all('div', class_='texts')
+    all_comments = [comment.find('span', class_='black').text for comment in comments_text]
+
+    return book_information
+
+
 def main():
     root_url = 'https://tululu.org/txt.php'
     parser = argparse.ArgumentParser(description='Скрипт парсинга книг из онлайн-библиотеки tululu.org.'
